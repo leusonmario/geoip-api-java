@@ -1,29 +1,29 @@
----
-sudo: false
-addons:
-  coverity_scan:
-    project:
-      description: Build submitted via Travis CI
-      name: maxmind/geoip-api-java
-    notification_email: dev-ci@maxmind.com
-    build_command_prepend: mvn clean
-    build_command: mvn -DskipTests=true compile
-    branch_pattern: .*coverity.*
+
+sudo: required
 language: java
+
 jdk:
   - openjdk6
   - openjdk7
   - oraclejdk7
   - oraclejdk8
-env:
-  global:
-    - secure: d72scMGybGfXPuGKwvFXOF+3fq9d/FV5CDN1uAD5GW1r+vV0dZkKnoG3ZZ7bwikOIei4Z5zQ1oVhnPhHOS2ReCxmui1uwcGJnwl1Pwpmq/zei2sNsqyPMGA3q0v87g8wr5G+l3cRPDMBlqtjjuYHfbvyXPbYf0qTJ9NDWybg40s=
-notifications:
-  email:
-    on_failure: always
-    on_success: change
-    recipients:
-      - dev-ci@maxmind.com
-  slack:
-    rooms:
-      secure: "e4/3Esjo65Quf7MN2mXKLY0CJ23iBFPdTGdGdhE8RVPzfR2/c+YzISSOGbDFGkuQyq2kDuK94PZ3JC7xT2Cy86DEIfCc3ws46qcknrRwbCZSXLH0gTYC748JKgdaGvXxjzwCyEIoAv67EiUPPFIm+R6d01P2h4JvGpAXSvD13DM=\n"
+
+
+script:
+  - mvn clean cobertura:cobertura -Dtest=CityLookupIdxTest#testCityLookupIdx -DfailIfNoTests=false
+
+before_deploy:
+- tar -zcvf coverage-result.tar.gz /home/travis/build/leusonmario/geoip-api-java/target/site/cobertura
+
+deploy:
+  provider: releases
+  api_key:
+    secure: "dlX5AWkxNvzOQym1RbaY0qP0uTUMjJjUUdTlzj5eWLFpkkkDGQvJonHSpYqmM11wAgrhx1q4i5bfcf9K2wgpGle9Bc0822W/mj6G8GlL0fC3p+WDgFv+X+8gzPx35DFL2DivFvLuNBB/lKyV4qssbOnNjjyUeD3qHW0gEtYGfKgL7pwin3n9jGwQKpem1iR5bNKkftfjbokWBs7ke/bcD96B8wIblnapiufFeCKuypPKTKD5bkr2FQStIjST99VA8vnAXhK4gFVA1fOs/jOU8M2lC/CRiygdSpvUuQfMFxN5ETrP2bTH4MKmk24NToZHMvwj9AXjVDri2mUHRNS0ocQ1/du6DLVfHGqX/AVwjrGTmIzw8ilPrFJBbIFx4qYP7ysX3N8SirwLb09gVgIgPYxqZ3SlDJE11WBeSWK8ZlDGMVm7TXfIumMCVy7IoHc5XGaXS+qcMuZlO2J2C4enWGT63fRWHOYX6V/HvCSLU5qPA448wCOdZrG0ROzjSsRWt6SnqkvTYMDvNZel8ChOFp0pX8ntvz56xY39JWfLJ6XNKSlnpitPnHtJJ3jrrlbAheAG8WrRZfgvBZ0wGuj8vA9aPxGlh7vgBnDUF92Cm6tOORu7ZnaE0cpYj/BuZe2ZxdeS7afv0fN8BH90WVnDaIHcJsrDdT+8UuQDmh571zI="
+
+
+  file: coverage-result.tar.gz
+  file_glob: true
+  overwrite: true
+  skip_cleanup: true
+  on:
+    tags: true
